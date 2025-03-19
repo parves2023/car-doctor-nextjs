@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { FaCheckCircle, FaArrowRight } from 'react-icons/fa';
 
 export default async function ServiceDetailsPage({ params }) {
-  const { id } = params;
+  const { id } = await params;
 
   // Connect to the database and fetch the service details
   const servicesCollection = dbConnect('test-services');

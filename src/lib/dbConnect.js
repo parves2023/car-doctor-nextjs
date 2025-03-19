@@ -5,7 +5,7 @@
 import { MongoClient, ServerApiVersion } from 'mongodb';
 
 
-export const collectionNameObj = {
+export const collectionNamesObj = {
   servicesCollection: 'test-services',
   userCollection: "test-user"
 }

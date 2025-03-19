@@ -1,38 +1,25 @@
-'use server';
+"use server";
+import bcrypt from "bcryptjs";
 
-import dbConnect, { collectionNameObj } from '@/lib/dbConnect';
+import dbConnect, { collectionNamesObj } from "@/lib/dbConnect";
 
 export const registerUser = async (payload) => {
-  const { email, password } = payload;
+    const userCollection = dbConnect(collectionNamesObj.userCollection)
 
-  try {
-    // Validate email format using regex
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      throw new Error('Invalid email format.');
+    // Validation
+    const { email, password } = payload;
+    if (!email || !password) return null;
+
+    const user = await userCollection.findOne({ email: payload.email })
+
+    if (!user) {
+        const hashedPassword = await bcrypt.hash(password, 10)
+        payload.password = hashedPassword
+        const result = await userCollection.insertOne(payload);
+        result.insertedId = result.insertedId.toString()
+        return result;
     }
+    return null;
 
-    // Validate password length
-    if (typeof password !== 'string' || password.length < 5) {
-      throw new Error('Password must be at least 5 characters long.');
-    }
 
-    // Connect to the database
-    const userCollection = dbConnect(collectionNameObj.userCollection);
-
-    // Check if a user with the same email already exists
-    const existingUser = await userCollection.findOne({ email });
-
-    if (existingUser) {
-      throw new Error('User with this email already exists.');
-    }
-
-    // If the user does not exist, insert the new user
-    const result = await userCollection.insertOne(payload);
-
-    return { success: true, message: 'User registered successfully!', result };
-  } catch (error) {
-    console.error('Error during registration:', error.message);
-    return { success: false, message: error.message };
-  }
-};
+}
